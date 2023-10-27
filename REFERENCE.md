@@ -18,13 +18,14 @@
 
 ### Defined types
 
-* [`apt::conf`](#aptconf): Specifies a custom Apt configuration file.
-* [`apt::key`](#aptkey): Manages the GPG keys that Apt uses to authenticate packages.
-* [`apt::mark`](#aptmark): Manages apt-mark settings
-* [`apt::pin`](#aptpin): Manages Apt pins. Does not trigger an apt-get update run.
-* [`apt::ppa`](#aptppa): Manages PPA repositories using `add-apt-repository`. Not supported on Debian.
-* [`apt::setting`](#aptsetting): Manages Apt configuration files.
-* [`apt::source`](#aptsource): Manages the Apt sources in /etc/apt/sources.list.d/.
+* [`apt::conf`](#apt--conf): Specifies a custom Apt configuration file.
+* [`apt::key`](#apt--key): Manages the GPG keys that Apt uses to authenticate packages.
+* [`apt::keyring`](#apt--keyring): Manage GPG keyrings for apt repositories
+* [`apt::mark`](#apt--mark): Manages apt-mark settings
+* [`apt::pin`](#apt--pin): Manages Apt pins. Does not trigger an apt-get update run.
+* [`apt::ppa`](#apt--ppa): Manages PPA repositories using `add-apt-repository`. Not supported on Debian.
+* [`apt::setting`](#apt--setting): Manages Apt configuration files.
+* [`apt::source`](#apt--source): Manages the Apt sources in /etc/apt/sources.list.d/.
 
 ### Resource types
 
@@ -61,38 +62,39 @@ Main class, includes all other classes.
 
 The following parameters are available in the `apt` class:
 
-* [`provider`](#provider)
-* [`keyserver`](#keyserver)
-* [`key_options`](#key_options)
-* [`ppa_options`](#ppa_options)
-* [`ppa_package`](#ppa_package)
-* [`backports`](#backports)
-* [`confs`](#confs)
-* [`update`](#update)
-* [`purge`](#purge)
-* [`proxy`](#proxy)
-* [`sources`](#sources)
-* [`keys`](#keys)
-* [`ppas`](#ppas)
-* [`pins`](#pins)
-* [`settings`](#settings)
-* [`manage_auth_conf`](#manage_auth_conf)
-* [`auth_conf_entries`](#auth_conf_entries)
-* [`auth_conf_owner`](#auth_conf_owner)
-* [`root`](#root)
-* [`sources_list`](#sources_list)
-* [`sources_list_d`](#sources_list_d)
-* [`conf_d`](#conf_d)
-* [`preferences`](#preferences)
-* [`preferences_d`](#preferences_d)
-* [`config_files`](#config_files)
-* [`sources_list_force`](#sources_list_force)
-* [`update_defaults`](#update_defaults)
-* [`purge_defaults`](#purge_defaults)
-* [`proxy_defaults`](#proxy_defaults)
-* [`include_defaults`](#include_defaults)
-* [`apt_conf_d`](#apt_conf_d)
-* [`source_key_defaults`](#source_key_defaults)
+* [`provider`](#-apt--provider)
+* [`keyserver`](#-apt--keyserver)
+* [`key_options`](#-apt--key_options)
+* [`ppa_options`](#-apt--ppa_options)
+* [`ppa_package`](#-apt--ppa_package)
+* [`backports`](#-apt--backports)
+* [`confs`](#-apt--confs)
+* [`update`](#-apt--update)
+* [`update_defaults`](#-apt--update_defaults)
+* [`purge`](#-apt--purge)
+* [`purge_defaults`](#-apt--purge_defaults)
+* [`proxy`](#-apt--proxy)
+* [`proxy_defaults`](#-apt--proxy_defaults)
+* [`sources`](#-apt--sources)
+* [`keys`](#-apt--keys)
+* [`keyrings`](#-apt--keyrings)
+* [`ppas`](#-apt--ppas)
+* [`pins`](#-apt--pins)
+* [`settings`](#-apt--settings)
+* [`manage_auth_conf`](#-apt--manage_auth_conf)
+* [`auth_conf_entries`](#-apt--auth_conf_entries)
+* [`auth_conf_owner`](#-apt--auth_conf_owner)
+* [`root`](#-apt--root)
+* [`sources_list`](#-apt--sources_list)
+* [`sources_list_d`](#-apt--sources_list_d)
+* [`conf_d`](#-apt--conf_d)
+* [`preferences`](#-apt--preferences)
+* [`preferences_d`](#-apt--preferences_d)
+* [`config_files`](#-apt--config_files)
+* [`sources_list_force`](#-apt--sources_list_force)
+* [`include_defaults`](#-apt--include_defaults)
+* [`apt_conf_d`](#-apt--apt_conf_d)
+* [`source_key_defaults`](#-apt--source_key_defaults)
 
 ##### <a name="provider"></a>`provider`
 
@@ -214,7 +216,15 @@ Creates new `apt::key` resources. Valid options: a hash to be passed to the crea
 
 Default value: `$apt::params::keys`
 
-##### <a name="ppas"></a>`ppas`
+##### <a name="-apt--keyrings"></a>`keyrings`
+
+Data type: `Hash`
+
+Hash of `apt::keyring` resources.
+
+Default value: `{}`
+
+##### <a name="-apt--ppas"></a>`ppas`
 
 Data type: `Hash`
 
@@ -619,7 +629,102 @@ Passes additional options to `apt-key adv --keyserver-options`.
 
 Default value: `$::apt::key_options`
 
-### <a name="aptmark"></a>`apt::mark`
+### <a name="apt--keyring"></a>`apt::keyring`
+
+Manage GPG keyrings for apt repositories
+
+#### Examples
+
+##### Download the puppetlabs apt keyring
+
+```puppet
+apt::keyring { 'puppetlabs-keyring.gpg':
+  source => 'https://apt.puppetlabs.com/keyring.gpg',
+}
+```
+
+##### Deploy the apt source and associated keyring file
+
+```puppet
+apt::source { 'puppet8-release':
+  location => 'http://apt.puppetlabs.com',
+  repos    => 'puppet8',
+  key      => {
+    name   => 'puppetlabs-keyring.gpg',
+    source => 'https://apt.puppetlabs.com/keyring.gpg'
+  }
+}
+```
+
+#### Parameters
+
+The following parameters are available in the `apt::keyring` defined type:
+
+* [`keyring_dir`](#-apt--keyring--keyring_dir)
+* [`keyring_filename`](#-apt--keyring--keyring_filename)
+* [`keyring_file`](#-apt--keyring--keyring_file)
+* [`keyring_file_mode`](#-apt--keyring--keyring_file_mode)
+* [`source`](#-apt--keyring--source)
+* [`content`](#-apt--keyring--content)
+* [`ensure`](#-apt--keyring--ensure)
+
+##### <a name="-apt--keyring--keyring_dir"></a>`keyring_dir`
+
+Data type: `Stdlib::Absolutepath`
+
+Path to the directory where the keyring will be stored.
+
+Default value: `'/etc/apt/keyrings'`
+
+##### <a name="-apt--keyring--keyring_filename"></a>`keyring_filename`
+
+Data type: `String[1]`
+
+Optional filename for the keyring. It should also contain extension along with the filename.
+
+Default value: `$name`
+
+##### <a name="-apt--keyring--keyring_file"></a>`keyring_file`
+
+Data type: `Stdlib::Absolutepath`
+
+File path of the keyring.
+
+Default value: `"${keyring_dir}/${keyring_filename}"`
+
+##### <a name="-apt--keyring--keyring_file_mode"></a>`keyring_file_mode`
+
+Data type: `Stdlib::Filemode`
+
+File permissions of the keyring.
+
+Default value: `'0644'`
+
+##### <a name="-apt--keyring--source"></a>`source`
+
+Data type: `Optional[Stdlib::Filesource]`
+
+Source of the keyring file. Mutually exclusive with 'content'.
+
+Default value: `undef`
+
+##### <a name="-apt--keyring--content"></a>`content`
+
+Data type: `Optional[String[1]]`
+
+Content of the keyring file. Mutually exclusive with 'source'.
+
+Default value: `undef`
+
+##### <a name="-apt--keyring--ensure"></a>`ensure`
+
+Data type: `Enum['present','absent']`
+
+Ensure presence or absence of the resource.
+
+Default value: `'present'`
+
+### <a name="apt--mark"></a>`apt::mark`
 
 Manages apt-mark settings
 
@@ -920,6 +1025,20 @@ apt::source { 'puppetlabs':
 }
 ```
 
+##### Download key behaviour to handle modern apt gpg keyrings. The `name` parameter in the key hash should be given with
+
+```puppet
+extension. Absence of extension will result in file formation with just name and no extension.
+apt::source { 'puppetlabs':
+  location => 'http://apt.puppetlabs.com',
+  comment  => 'Puppet8',
+  key      => {
+    'name'   => 'puppetlabs.gpg',
+    'source' => 'https://apt.puppetlabs.com/keyring.gpg',
+  },
+}
+```
+
 #### Parameters
 
 The following parameters are available in the `apt::source` defined type:
@@ -994,9 +1113,12 @@ Default value: `{}`
 
 Data type: `Optional[Variant[String, Hash]]`
 
-Creates a declaration of the apt::key defined type. Valid options: a string to be passed to the `id` parameter of the `apt::key`
-defined type, or a hash of `parameter => value` pairs to be passed to `apt::key`'s `id`, `server`, `content`, `source`, `weak_ssl`,
-and/or `options` parameters.
+Creates an `apt::keyring` in `/etc/apt/keyrings` (or anywhere on disk given `filename`) Valid options:
+  * a hash of `parameter => value` pairs to be passed to `file`: `name` (title), `content`, `source`, `filename`
+
+The following inputs are valid for the (deprecated) `apt::key` defined type. Valid options:
+  * a string to be passed to the `id` parameter of the `apt::key` defined type
+  * a hash of `parameter => value` pairs to be passed to `apt::key`: `id`, `server`, `content`, `source`, `weak_ssl`, `options`
 
 Default value: ``undef``
 
@@ -1005,6 +1127,7 @@ Default value: ``undef``
 Data type: `Optional[Stdlib::AbsolutePath]`
 
 Absolute path to a file containing the PGP keyring used to sign this repository. Value is used to set signed-by on the source entry.
+This is not necessary if the key is installed with `key` param above.
 See https://wiki.debian.org/DebianRepository/UseThirdParty for details.
 
 Default value: ``undef``
@@ -1023,8 +1146,8 @@ Default value: ``undef``
 Data type: `Optional[String]`
 
 Tells Apt to only download information for specified architectures. Valid options: a string containing one or more architecture names,
-separated by commas (e.g., 'i386' or 'i386,alpha,powerpc'). Default: undef (if unspecified, Apt downloads information for all architectures
-defined in the Apt::Architectures option).
+separated by commas (e.g., 'i386' or 'i386,alpha,powerpc').
+(if unspecified, Apt downloads information for all architectures defined in the Apt::Architectures option)
 
 Default value: ``undef``
 
